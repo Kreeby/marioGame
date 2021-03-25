@@ -3,5 +3,6 @@ package abstractions;
 public enum ObjectId {
 
     Player(),
-    Block();
+    Block(),
+    Enemy();
 }

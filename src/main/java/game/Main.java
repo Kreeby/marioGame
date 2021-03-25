@@ -2,7 +2,9 @@ package game;
 
 import abstractions.KeyInput;
 import abstractions.ObjectId;
+import abstractions.Texture;
 import objects.Block;
+import objects.Enemy;
 import objects.Player;
 
 import java.awt.*;
@@ -22,23 +24,28 @@ public class Main extends Canvas implements Runnable {
     public static int WIDTH;
     public static int HEIGHT;
 
+
     private boolean isRunning = false;
     private Handler handler;
     private Camera camera;
-
+    private static Texture texture;
+    private BufferedImage clouds = null;
     private void init() {
         WIDTH = getWidth();
         HEIGHT = getHeight();
 
+        texture = new Texture();
+
         BufferedImageLoader bufferedImageLoader = new BufferedImageLoader();
-        BufferedImage level = bufferedImageLoader.loadImage("res/leveltest.jpg");
+        BufferedImage level = bufferedImageLoader.loadImage("res/level.png");
+//        clouds = bufferedImageLoader.loadImage("res/clouds.png");
+
+
 
         handler = new Handler();
         camera = new Camera(0, 0);
         loadImageLevel(level);
 
-        handler.addObjects(new Player(100, 100, handler, ObjectId.Player));
-        handler.createLevel();
 
         this.addKeyListener(new KeyInput(handler));
     }
@@ -97,8 +104,10 @@ public class Main extends Canvas implements Runnable {
 
         // Draw here
 
-        g.setColor(Color.BLACK);
+        g.setColor(Color.CYAN);
         g.fillRect(0, 0, getWidth(), getHeight());
+
+        g.drawImage(clouds, 0, 0, this);
 
         graphics2D.translate(camera.getX(), camera.getY()); // beginning of camera
         handler.render(g);
@@ -122,21 +131,31 @@ public class Main extends Canvas implements Runnable {
         int w = image.getWidth();
         int h = image.getHeight();
 
-        for (int i = 0; i < h; i++) {
-            for (int j = 0; j < w; j++) {
-                int pixel = image.getRGB(i, j);
+        for (int xx = 0; xx < h; xx++) {
+            for (int yy = 0; yy < w; yy++) {
+                int pixel = image.getRGB(xx, yy);
                 int red = (pixel >> 16) & 0xff;
                 int green = (pixel >> 8) & 0xff;
                 int blue = (pixel) & 0xff;
 
                 if (red == 255 && green == 255 && blue == 255) {
-                    handler.addObjects(new Block(i * 32, j * 32, ObjectId.Block));
+                    handler.addObjects(new Block(xx * 32, yy * 32, 0,  ObjectId.Block));
                 }
-                if (red == 0 && green == 0 && blue == 255) {
-                    handler.addObjects(new Player(i * 32, j * 32, handler, ObjectId.Player));
+                if(red == 255 && green == 242 && blue == 0) {
+                    handler.addObjects(new Enemy(xx * 32, yy * 32, handler, ObjectId.Enemy));
                 }
+                else if (red == 0 && green == 0 && blue == 255) {
+                    handler.addObjects(new Player(xx * 32, yy * 32, handler, ObjectId.Player));
+                } else if (red == 0 && green == 255 && blue == 0) {
+                    handler.addObjects(new Block(xx * 32, yy * 32, 2, ObjectId.Block));
+                } else if(red == 255 && green == 0 && blue == 0)
+                    handler.addObjects(new Block(xx * 32, yy * 32, 1, ObjectId.Block));
             }
         }
+    }
+
+    public static Texture getInstance() {
+        return texture;
     }
 
     public static void main(String[] args) {

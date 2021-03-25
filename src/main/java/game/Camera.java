@@ -12,6 +12,7 @@ public class Camera {
 
     public void tick(GameObject player) {
         x = -player.getX() + Main.WIDTH / 2;
+        y = -player.getY() + Main.HEIGHT/ 2;
     }
 
     public float getX() {

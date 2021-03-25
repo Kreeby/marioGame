@@ -3,40 +3,41 @@ package objects;
 import abstractions.GameObject;
 import abstractions.ObjectId;
 import abstractions.Texture;
-import game.Animation;
 import game.Handler;
 import game.Main;
-import org.w3c.dom.Text;
 
 import java.awt.*;
 import java.util.LinkedList;
 
-public class Player extends GameObject {
+public class Enemy extends GameObject {
     private static final float GRAVITY = 0.5f;
     private static final float MAX_SPEED = 10;
 
     private final float WIDTH = 32;
-    private final float HEIGHT = 64;
+    private final float HEIGHT = 32;
 
     private final float COLLISION_WIDTH = 5;
 
     private final Handler handler;
 
+    private boolean isCollided = false;
+
     Texture texture = Main.getInstance();
 
-
-    private Animation playerWalk;
-
-    public Player(float x, float y, Handler handler, ObjectId id) {
+    public Enemy(float x, float y, Handler handler, ObjectId id) {
         super(x, y, id);
         this.handler = handler;
-
-        playerWalk = new Animation(5, texture.player[1],
-                texture.player[2], texture.player[3], texture.player[4]);
+        velX = -3;
     }
 
     @Override
     public void tick(LinkedList<GameObject> object) {
+
+        if(isCollided) {
+            velX = -velX;
+            isCollided = false;
+        }
+
         x += velX;
         y += velY;
 
@@ -47,14 +48,13 @@ public class Player extends GameObject {
             }
         }
         collision(object);
-
-        playerWalk.runAnimation();
     }
 
     private void collision(LinkedList<GameObject> objects) {
         for(int i = 0; i < handler.objects.size(); i++) {
             GameObject tempObject = handler.objects.get(i);
             if(tempObject.getId() == ObjectId.Block) {
+
                 if(getBoundsTop().intersects(tempObject.getBounds())) {
                     y = tempObject.getY() + (HEIGHT / 2);
                     velY = 0;
@@ -67,23 +67,26 @@ public class Player extends GameObject {
                 } else {
                     isFalling = true;
                 }
+
                 if(getBoundsRight().intersects(tempObject.getBounds())) {
                     x = tempObject.getX() - WIDTH;
+                    isCollided = true;
                 }
 
                 if(getBoundsLeft().intersects(tempObject.getBounds())) {
                     x = tempObject.getX() + 35;
+                    isCollided = true;
                 }
             }
-            else if (tempObject.getId() == ObjectId.Enemy) {
+            if(tempObject.getId() == ObjectId.Player) {
+                if(getBoundsRight().intersects(tempObject.getBounds())) {
+                    x = tempObject.getX() - WIDTH;
+                    isCollided = true;
+                }
 
-                if(getBounds().intersects(tempObject.getBounds())) {
-                    y = tempObject.getY() - HEIGHT - 16;
-                    velY = 0;
-                    isFalling = false;
-                    isJumping = false;
-                } else {
-                    isFalling = true;
+                if(getBoundsLeft().intersects(tempObject.getBounds())) {
+                    x = tempObject.getX() + 35;
+                    isCollided = true;
                 }
             }
         }
@@ -91,10 +94,8 @@ public class Player extends GameObject {
 
     @Override
     public void render(Graphics g) {
-        if(velX != 0)
-            playerWalk.drawAnimation(g, (int) x, (int) y);
-        else
-            g.drawImage(texture.player[0], (int) x, (int) y, null);
+        g.setColor(Color.BLACK);
+        g.fillRect((int) x, (int) y, (int) WIDTH, (int) HEIGHT);
     }
 
 
@@ -113,5 +114,4 @@ public class Player extends GameObject {
     public Rectangle getBoundsLeft() {
         return new Rectangle((int) x, (int) ((int) y + COLLISION_WIDTH), (int) COLLISION_WIDTH, (int) HEIGHT - 10);
     }
-
 }
