@@ -3,9 +3,6 @@ package game;
 import abstractions.KeyInput;
 import abstractions.ObjectId;
 import abstractions.Texture;
-import objects.Block;
-import objects.Enemy;
-import objects.Player;
 
 import java.awt.*;
 import java.awt.image.BufferStrategy;
@@ -20,7 +17,7 @@ public class Main extends Canvas implements Runnable {
     private static final int MAX_NUMBER = 1_000_000_000;
     private static final int MAX_TIMER = 1_000;
     private static final int STATIC_DELTA = 1;
-
+    public static int LEVEL = 1;
     public static int WIDTH;
     public static int HEIGHT;
 
@@ -30,6 +27,7 @@ public class Main extends Canvas implements Runnable {
     private Camera camera;
     private static Texture texture;
     private BufferedImage clouds = null;
+    public BufferedImage level = null;
     private void init() {
         WIDTH = getWidth();
         HEIGHT = getHeight();
@@ -37,14 +35,14 @@ public class Main extends Canvas implements Runnable {
         texture = new Texture();
 
         BufferedImageLoader bufferedImageLoader = new BufferedImageLoader();
-        BufferedImage level = bufferedImageLoader.loadImage("res/level.png");
-//        clouds = bufferedImageLoader.loadImage("res/clouds.png");
+        level = bufferedImageLoader.loadImage("res/level.png");
+        clouds = bufferedImageLoader.loadImage("res/clouds.png");
 
 
-
-        handler = new Handler();
         camera = new Camera(0, 0);
-        loadImageLevel(level);
+
+        handler = new Handler(camera);
+        handler.loadImageLevel(level);
 
 
         this.addKeyListener(new KeyInput(handler));
@@ -107,10 +105,15 @@ public class Main extends Canvas implements Runnable {
         g.setColor(Color.CYAN);
         g.fillRect(0, 0, getWidth(), getHeight());
 
-        g.drawImage(clouds, 0, 0, this);
 
+        int width;
         graphics2D.translate(camera.getX(), camera.getY()); // beginning of camera
+            for (int i = 0; i < clouds.getWidth() * 5; i+= clouds.getWidth()) {
+                width = i + 100;
+                g.drawImage(clouds, i + width * 4, 100, this);
+            }
         handler.render(g);
+
         graphics2D.translate(-camera.getX(), -camera.getY()); // end of camera
         ////
 
@@ -127,32 +130,9 @@ public class Main extends Canvas implements Runnable {
         }
     }
 
-    private void loadImageLevel(BufferedImage image) {
-        int w = image.getWidth();
-        int h = image.getHeight();
 
-        for (int xx = 0; xx < h; xx++) {
-            for (int yy = 0; yy < w; yy++) {
-                int pixel = image.getRGB(xx, yy);
-                int red = (pixel >> 16) & 0xff;
-                int green = (pixel >> 8) & 0xff;
-                int blue = (pixel) & 0xff;
 
-                if (red == 255 && green == 255 && blue == 255) {
-                    handler.addObjects(new Block(xx * 32, yy * 32, 0,  ObjectId.Block));
-                }
-                if(red == 255 && green == 242 && blue == 0) {
-                    handler.addObjects(new Enemy(xx * 32, yy * 32, handler, ObjectId.Enemy));
-                }
-                else if (red == 0 && green == 0 && blue == 255) {
-                    handler.addObjects(new Player(xx * 32, yy * 32, handler, ObjectId.Player));
-                } else if (red == 0 && green == 255 && blue == 0) {
-                    handler.addObjects(new Block(xx * 32, yy * 32, 2, ObjectId.Block));
-                } else if(red == 255 && green == 0 && blue == 0)
-                    handler.addObjects(new Block(xx * 32, yy * 32, 1, ObjectId.Block));
-            }
-        }
-    }
+
 
     public static Texture getInstance() {
         return texture;

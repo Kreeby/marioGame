@@ -13,9 +13,9 @@ public class Enemy extends GameObject {
     private static final float GRAVITY = 0.5f;
     private static final float MAX_SPEED = 10;
 
+
     private final float WIDTH = 32;
     private final float HEIGHT = 32;
-
     private final float COLLISION_WIDTH = 5;
 
     private final Handler handler;
@@ -23,9 +23,11 @@ public class Enemy extends GameObject {
     private boolean isCollided = false;
 
     Texture texture = Main.getInstance();
+    private int type;
 
-    public Enemy(float x, float y, Handler handler, ObjectId id) {
+    public Enemy(float x, float y, int type, Handler handler, ObjectId id) {
         super(x, y, id);
+        this.type = type;
         this.handler = handler;
         velX = -3;
     }
@@ -69,7 +71,7 @@ public class Enemy extends GameObject {
                 }
 
                 if(getBoundsRight().intersects(tempObject.getBounds())) {
-                    x = tempObject.getX() - WIDTH;
+                    x = tempObject.getX() - 35;
                     isCollided = true;
                 }
 
@@ -82,10 +84,12 @@ public class Enemy extends GameObject {
                 if(getBoundsRight().intersects(tempObject.getBounds())) {
                     x = tempObject.getX() - WIDTH;
                     isCollided = true;
+                    System.out.println("DUDE U DIED");
                 }
 
                 if(getBoundsLeft().intersects(tempObject.getBounds())) {
                     x = tempObject.getX() + 35;
+                    System.out.println("DUDE U DIED");
                     isCollided = true;
                 }
             }
@@ -94,8 +98,14 @@ public class Enemy extends GameObject {
 
     @Override
     public void render(Graphics g) {
-        g.setColor(Color.BLACK);
-        g.fillRect((int) x, (int) y, (int) WIDTH, (int) HEIGHT);
+        if(type == 3)
+            g.drawImage(texture.blocks[3],(int) x, (int) y, null);
+        Graphics2D g2d = (Graphics2D) g;
+        g.setColor(Color.red);
+        g2d.draw(getBounds());
+        g2d.draw(getBoundsTop());
+        g2d.draw(getBoundsRight());
+        g2d.draw(getBoundsLeft());
     }
 
 
@@ -104,14 +114,14 @@ public class Enemy extends GameObject {
     }
 
     public Rectangle getBoundsTop() {
-        return new Rectangle((int) ((int) x + (WIDTH / 2) - ((WIDTH / 2) / 2)), (int) y, (int) WIDTH / 2, (int) HEIGHT / 2);
+        return new Rectangle((int) ((int) x + (WIDTH) - ((WIDTH))), (int) y, (int) WIDTH, (int) HEIGHT / 2);
     }
 
     public Rectangle getBoundsRight() {
-        return new Rectangle((int) ((int) x + WIDTH - COLLISION_WIDTH), (int) ((int) y + COLLISION_WIDTH), (int) COLLISION_WIDTH, (int) HEIGHT - 10);
+        return new Rectangle((int) ((int) x + WIDTH - COLLISION_WIDTH) + 5, (int) ((int) y + COLLISION_WIDTH), (int) COLLISION_WIDTH, (int) HEIGHT - 10);
     }
 
     public Rectangle getBoundsLeft() {
-        return new Rectangle((int) x, (int) ((int) y + COLLISION_WIDTH), (int) COLLISION_WIDTH, (int) HEIGHT - 10);
+        return new Rectangle((int) x - 5, (int) ((int) y + COLLISION_WIDTH), (int) COLLISION_WIDTH, (int) HEIGHT - 10);
     }
 }
